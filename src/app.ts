@@ -10,6 +10,7 @@ import authRoutes from "./routes/authRoutes";
 import productRoutes from "./routes/productRoutes";
 import blogRoutes from "./routes/blogRoutes";
 import userRoutes from "./routes/userRoutes";
+import adminRoutes from './routes/adminRoutes';
 import { errorHandler } from "./middlewares/error";
 import { apiLimiter } from "./middlewares/rateLimit";
 
@@ -36,6 +37,7 @@ app.use(apiLimiter);
 app.use(express.json({ limit: '10kb' }));
 
 // Routes
+app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/blog', blogRoutes);
