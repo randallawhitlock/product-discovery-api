@@ -47,7 +47,7 @@ const BlogPostSchema = new Schema({
   },
   readTime: {
     type: Number,
-    required: true,
+    required: false,
     min: 1
   }
 }, {
