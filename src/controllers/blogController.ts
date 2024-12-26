@@ -42,7 +42,13 @@ class BlogController {
     try {
       const page = parseInt(req.query.page || '1');
       const limit = parseInt(req.query.limit || '10');
-      const status = req.query.status || 'published';
+      const queryStatus = req.query.status || 'published';
+
+      let status = 'published';
+      if (req.user?.role === 'admin' && queryStatus) {
+        // Admin can filter by status if specified
+        status =  queryStatus;
+      }
 
       const result = await blogService.getAllPosts(page, limit, status);
       res.status(200).json(result);
