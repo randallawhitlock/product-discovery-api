@@ -23,30 +23,33 @@ class AuthService {
     return jwt.sign(payload, secret, { expiresIn: this.JWT_REFRESH_EXPIRES });
   }
 
-  async register(userData: { username: string; email: string; password: string }) {
-    const existingUser = await User.findOne({ 
-      $or: [{ email: userData.email }, { username: userData.username }] 
-    });
+  async register(userData: { email: string; password: string }) {
+    const existingUser = await User.findOne({ email: userData.email });
     
     if (existingUser) {
-      throw new AppError(
-        existingUser.email === userData.email ? 'Email already in use' : 'Username already taken', 
-        400
-      );
+      throw new AppError('Email already in use', 400);
     }
 
     const user = new User({
-      ...userData,
+      email: userData.email,
+      password: userData.password,
       role: 'user'
     });
 
     await user.save();
-    return this.generateTokens(user);
+    return {
+      ...(await this.generateTokens(user)),
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role
+      }
+    }
   }
 
   async login(email: string, password: string) {
     const user = await User.findOne({ email }).select('+password');
-    if (!user || !user.isActive) {
+    if (!user) {
       throw new AppError('Invalid credentials', 401);
     }
 
@@ -58,7 +61,14 @@ class AuthService {
     user.lastLogin = new Date();
     await user.save();
 
-    return this.generateTokens(user);
+    return {
+      ...(await this.generateTokens(user)),
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role
+      }
+    }
   }
 
   async refreshToken(refreshToken: string) {
