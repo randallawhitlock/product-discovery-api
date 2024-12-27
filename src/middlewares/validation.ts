@@ -17,13 +17,6 @@ const validateResult = (
 };
 
 export const validateRegistration = [
-  body('username')
-    .trim()
-    .notEmpty()
-    .withMessage('Username is required')
-    .isLength({ min: config.usernameMinLength, max: config.usernameMaxLength })
-    .withMessage(`Username must be between ${config.usernameMinLength} and ${config.usernameMaxLength} characters`),
-    
   body('email')
     .trim()
     .notEmpty()
@@ -58,35 +51,6 @@ export const validateLogin = [
 
   validateResult
 ];
-
-export const validateUserUpdate = [
-  body('username')
-    .optional()
-    .trim()
-    .isLength({ min: config.usernameMinLength, max: config.usernameMaxLength })
-    .withMessage(`Username must be between ${config.usernameMinLength} and ${config.usernameMaxLength} characters`),
-  
-  body('profile.bio')
-    .optional()
-    .trim()
-    .isLength({ max: 500 })
-    .withMessage('Bio cannot exceed 500 characters'),
-  
-  body('profile.avatar')
-    .optional()
-    .trim()
-    .isURL()
-    .withMessage('Avatar must be a valid URL'),
-  
-  body('profile.social.*')
-    .optional()
-    .trim()
-    .isURL()
-    .withMessage('Social media links must be valid URLs'),
-
-  validateResult
-];
-
 export const validateProduct = [
   body('name')
     .trim()
@@ -151,3 +115,20 @@ export const validateBlogPost = [
   
   validateResult
 ];
+
+export const validateUserUpdate = (
+  body('email')
+  .trim()
+  .notEmpty()
+  .withMessage('Email is required')
+  .isEmail()
+  .withMessage('Invalid email format')
+  .normalizeEmail(),
+  
+body('password')
+  .trim()
+  .notEmpty()
+  .withMessage('Password is required'),
+
+validateResult
+);
