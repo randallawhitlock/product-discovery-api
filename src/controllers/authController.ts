@@ -3,7 +3,6 @@ import authService from '../services/authService';
 import { AppError } from '../types';
 
 interface RegisterRequest {
-  username: string;
   email: string;
   password: string;
 }
@@ -23,11 +22,11 @@ export const register = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { username, email, password } = req.body;
-    const tokens = await authService.register({ username, email, password });
+    const { email, password } = req.body;
+    const tokensAndUser = await authService.register({ email, password }); // Removed username
     res.status(201).json({
       message: 'User registered successfully',
-      ...tokens
+      ...tokensAndUser
     });
   } catch (error) {
     next(error);
@@ -41,8 +40,8 @@ export const login = async (
 ): Promise<void> => {
   try {
     const { email, password } = req.body;
-    const tokens = await authService.login(email, password);
-    res.json(tokens);
+    const tokensAndUser = await authService.login(email, password);
+    res.json(tokensAndUser);
   } catch (error) {
     next(error);
   }
