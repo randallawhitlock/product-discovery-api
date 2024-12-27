@@ -1,39 +1,24 @@
+// src/models/user.ts
 import mongoose, { Document, Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 export interface IUser extends Document {
-  username: string;
   email: string;
   password: string;
   role: 'user' | 'admin';
   wishlist: mongoose.Types.ObjectId[];
-  profile: {
-    bio: string;
-    avatar: string;
-    social: {
-      twitter?: string;
-      linkedin?: string;
-      website?: string;
-    }
-  };
   isActive: boolean;
   lastLogin: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
 const UserSchema = new Schema({
-  username: {
-    type: String,
-    required: [true, 'Username is required'],
-    trim: true,
-    minlength: [3, 'Username must be at least 3 characters'],
-    maxlength: [30, 'Username cannot exceed 30 characters']
-  },
   email: {
     type: String,
     required: [true, 'Email is required'],
     trim: true,
     lowercase: true,
+    unique: true, // This will automatically create the unique index for email
     validate: {
       validator: (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
       message: 'Please enter a valid email'
@@ -54,43 +39,6 @@ const UserSchema = new Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Product'
   }],
-  profile: {
-    bio: {
-      type: String,
-      maxlength: [500, 'Bio cannot exceed 500 characters']
-    },
-    avatar: {
-      type: String,
-      default: 'default-avatar.png',
-      validate: {
-        validator: (v: string) => !v || /^https?:\/\/.+/.test(v),
-        message: 'Avatar must be a valid URL'
-      }
-    },
-    social: {
-      twitter: {
-        type: String,
-        validate: {
-          validator: (v: string) => !v || /^https?:\/\/.+/.test(v),
-          message: 'Twitter link must be a valid URL'
-        }
-      },
-      linkedin: {
-        type: String,
-        validate: {
-          validator: (v: string) => !v || /^https?:\/\/.+/.test(v),
-          message: 'LinkedIn link must be a valid URL'
-        }
-      },
-      website: {
-        type: String,
-        validate: {
-          validator: (v: string) => !v || /^https?:\/\/.+/.test(v),
-          message: 'Website link must be a valid URL'
-        }
-      }
-    }
-  },
   isActive: {
     type: Boolean,
     default: true
@@ -103,10 +51,8 @@ const UserSchema = new Schema({
   timestamps: true
 });
 
-// Indexes - Define all indexes in one place
-UserSchema.index({ email: 1 }, { unique: true });
-UserSchema.index({ username: 1 }, { unique: true });
-UserSchema.index({ 'profile.bio': 'text' });
+// Index for text search on bio field
+UserSchema.index({ 'profile.bio': 'text' }, { background: true });
 
 // Instance method to compare password
 UserSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
